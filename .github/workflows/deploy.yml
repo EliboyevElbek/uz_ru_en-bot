@@ -32,7 +32,7 @@ jobs:
             pip install -r requirements.txt
 
             echo "Restarting bot..."
-            pkill -f "python bot.py" || true
+            pkill -f "python main.py" || true
             nohup python main.py > bot.log 2>&1 &
 
             echo "Deployment successful!"
