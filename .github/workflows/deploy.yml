@@ -33,6 +33,6 @@ jobs:
 
             echo "Restarting bot..."
             pkill -f "python bot.py" || true
-            nohup python bot.py > bot.log 2>&1 &
+            nohup python main.py > bot.log 2>&1 &
 
             echo "Deployment successful!"
