@@ -203,11 +203,13 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
         os.remove(file_path)
         count = 0
         for index, row in df.iterrows():
+            if row.shape[0] == 2:
+                row[2] = GoogleTranslator(source='ru', target='en').translate(row[1])
             if db.word_add(row[0], row[1], row[2], data['cat_id']):
                 count += 1
 
         await message.reply(f"🔢Jami {df.shape[0]} ta so'z\n✅Qo'shildi: {count} ta\n"
-                            f"❌Qo'shilmadi: {df.shape[0] - count} ta")
+                            f"❌Xatolik: {df.shape[0] - count} ta")
 
     else:
         await message.reply(text="📥Excel document jo'nating")
