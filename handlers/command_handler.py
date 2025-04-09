@@ -30,10 +30,12 @@ async def start_user_handler(message: Message):
 async def help_handler(message: Message):
     await message.reply(
         text=f"🚨Hurmatli {message.from_user.mention_html(f"{message.from_user.full_name}")}!\n"
-             f"bu botda siz <b>Rus tilida</b> so'z yodlashni yanada osonlashtirishingiz mumkin\n\n"
+             f"bu botda siz <b>Rus tilida</b> so'z yodlashni yanada osonlashtirishingiz mumkin.\n\n"
              f"<b>Buyruqlar:</b>\n<b>uz-ru-select</b> - O'zbekcha so'z va ruschada 4 ta varianti beriladi siz"
              f" to'g'risini topishingiz kerak bo'ladi.\n\n<b>ru-uz-select</b> - bu tepadagi buyruqni aksi"
              f" Ruscha so'z va o'zbekchada 4 ta varianti beriladi to'g'risini topishingiz kerak.\n\n"
+             f" <b>uz_ru_quiz</b> - <b>ru_uz_quiz</b> - <b>uz_en_quiz</b> - <b>en_uz_quiz</b> bular huddi tepadagi"
+             f" buyruqlarga mos ravishda quizlari.\n\n"
              f"<b>uz-ru-typing</b> - bu buyruqda O'zbekchada so'z beriladi siz ruschasini imlo xatosiz yozishingiz kerak. (<i>Tez orada...🔜</i>)\n\n"
              f"<b>ru-uz-typing</b> - bu tepadagini aksi Ruschada so'z beriladi O'zbekchasini yozasiz. (<i>Tez orada...🔜</i>)\n\n\n"
              f"<i>Tepadagilardan birortasini tanlang🙂</i>"
