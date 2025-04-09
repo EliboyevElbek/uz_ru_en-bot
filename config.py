@@ -8,6 +8,6 @@ DB_PASS = os.getenv("DB_PASS")
 DB_USER = os.getenv("DB_USER")
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
-big_admin = int(os.getenv("big_admin"))
+big_admin = os.getenv("big_admin")
 
 
