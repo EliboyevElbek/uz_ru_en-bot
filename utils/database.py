@@ -180,7 +180,7 @@ class Database:
                 )
                 self.conn.commit()
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     # def bot_members(self, tg_id, username, full_name, add_date=datetime.now().strftime("%d.%m.%Y/%H:%M")):
