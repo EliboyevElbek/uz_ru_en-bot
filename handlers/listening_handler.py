@@ -14,7 +14,8 @@ async def en_to_voice(message: Message):
     if response.status_code == 200:
         data = json.loads(response.text)
         voice = data[0]['phonetics'][1]['audio']
-        await message.answer_voice(audio=voice, caption=message.text)
+        await message.delete()
+        await message.answer_voice(voice=voice, caption=message.text)
     else:
         await message.reply("❌Xatolik yuz berdi, faqat Ingliz tilidagi so'zlarni kiriting")
 

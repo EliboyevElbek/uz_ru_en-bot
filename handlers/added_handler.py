@@ -98,14 +98,14 @@ async def edit_surah(message: Message, state: FSMContext):
 async def get_all_users_handler(message: Message):
     users = db.get_users()
     info = ''
-    await message.delete()
     if users:
         for user in users:
             info += (f"<b>Tg ID:</b> {user[0]}\n<b>Username:</b> {'@' + user[1] if user[1] else '<i>Mavjud emas</i>'}\n<b>Fullname:</b> <a href='tg://user?id={user[0]}'>{user[2]}</a>\n<b>Added: <i>{user[3]}</i></b>\n"
                      f"------------------------------------------------------\n")
-        await message.reply(text=info)
+        await message.answer(text=info)
     else:
-        await message.reply(text="<b>Bazada foydalanuvchilar mavjud emas😐</b>")
+        await message.answer(text="<b>Bazada foydalanuvchilar mavjud emas😐</b>")
+    await message.delete()
 
 
 

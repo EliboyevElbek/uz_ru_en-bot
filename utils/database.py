@@ -166,8 +166,6 @@ class Database:
             )
             return uz.fetchone()
 
-    from datetime import datetime
-
     def bot_members(self, tg_id, username, full_name, add_date=None):
         if add_date is None:
             add_date = (datetime.now() + timedelta(hours=5)).strftime("%d.%m.%Y/%H:%M")
@@ -198,6 +196,6 @@ class Database:
     def get_users(self):
         with self.conn.cursor() as cursor:
             users = cursor.execute(
-                'SELECT tg_id, username, full_name, add_date FROM "users"'
+                'SELECT tg_id, username, full_name, add_date FROM "users";'
             )
             return users.fetchall()
