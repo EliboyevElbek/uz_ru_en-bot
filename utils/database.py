@@ -1,6 +1,7 @@
 import psycopg
 from config import DB_USER, DB_HOST, DB_PASS
-from datetime import datetime
+from datetime import datetime, timedelta
+
 
 class Database:
     def __init__(self, db_name):
@@ -169,7 +170,7 @@ class Database:
 
     def bot_members(self, tg_id, username, full_name, add_date=None):
         if add_date is None:
-            add_date = datetime.now().strftime("%d.%m.%Y/%H:%M")
+            add_date = (datetime.now() + timedelta(hours=5)).strftime("%d.%m.%Y/%H:%M")
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(
