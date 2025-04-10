@@ -165,16 +165,34 @@ class Database:
             )
             return uz.fetchone()
 
-    def bot_members(self, tg_id, username, full_name, add_date=datetime.now().strftime("%d.%m.%Y/%H:%M")):
+    from datetime import datetime
+
+    def bot_members(self, tg_id, username, full_name, add_date=None):
+        if add_date is None:
+            add_date = datetime.now().strftime("%d.%m.%Y/%H:%M")
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(
-                    'INSERT INTO "users" (tg_id, username, full_name, add_date) VALUES (%s, %s, %s, %s) ON CONFLICT (tg_id) DO NOTHING', (tg_id, username, full_name, add_date)
+                    '''INSERT INTO "users" (tg_id, username, full_name, add_date) 
+                       VALUES (%s, %s, %s, %s) 
+                       ON CONFLICT (tg_id) DO NOTHING''',
+                    (tg_id, username, full_name, add_date)
                 )
                 self.conn.commit()
             return True
-        except:
+        except Exception as e:
             return False
+
+    # def bot_members(self, tg_id, username, full_name, add_date=datetime.now().strftime("%d.%m.%Y/%H:%M")):
+    #     try:
+    #         with self.conn.cursor() as cursor:
+    #             cursor.execute(
+    #                 'INSERT INTO "users" (tg_id, username, full_name, add_date) VALUES (%s, %s, %s, %s) ON CONFLICT (tg_id) DO NOTHING', (tg_id, username, full_name, add_date)
+    #             )
+    #             self.conn.commit()
+    #         return True
+    #     except:
+    #         return False
 
     def get_users(self):
         with self.conn.cursor() as cursor:
