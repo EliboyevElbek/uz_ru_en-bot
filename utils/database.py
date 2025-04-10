@@ -169,7 +169,7 @@ class Database:
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(
-                    'INSERT INTO "Users" (tg_id, username, full_name, add_date) VALUES (%s, %s, %s, %s) ON CONFLICT (tg_id) DO NOTHING', (tg_id, username, full_name, add_date)
+                    'INSERT INTO "users" (tg_id, username, full_name, add_date) VALUES (%s, %s, %s, %s) ON CONFLICT (tg_id) DO NOTHING', (tg_id, username, full_name, add_date)
                 )
                 self.conn.commit()
             return True
@@ -179,6 +179,6 @@ class Database:
     def get_users(self):
         with self.conn.cursor() as cursor:
             users = cursor.execute(
-                'SELECT tg_id, username, full_name, add_date FROM "Users"'
+                'SELECT tg_id, username, full_name, add_date FROM "users"'
             )
             return users.fetchall()

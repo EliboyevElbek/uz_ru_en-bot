@@ -6,7 +6,7 @@ import pandas as pd
 from aiogram.enums import ChatAction, PollType
 from deep_translator import GoogleTranslator
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery, PollAnswer
 from aiogram.fsm.context import FSMContext
@@ -16,7 +16,7 @@ from keyboard.inline_keyboard import get_categories_kb, between_kb, between_kb_e
 from keyboard.keyboard import off, select_word_kb, between_keyboard, quiz_stop
 from state.admin_state import WordsState, NewWordState, NewWordExcel, UzWords, RuWords, Translate, EnWords, UzEnWords, \
     Quiz, QuizUzRu, QuizEnUz, QuizUzEn
-from config import DB_NAME
+from config import DB_NAME, big_admin
 from utils.database import Database
 
 word_router = Router()
@@ -128,7 +128,7 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
 
 
 
-@word_router.message(Command('new_word_add'))
+@word_router.message(Command('new_word_add'), F.chat.id == big_admin)
 async def new_add_cat_handler(message: Message, state: FSMContext):
     await state.set_state(NewWordState.selectCategory)
     await message.answer(
@@ -176,7 +176,8 @@ async def insert_word_handler(message: Message, state: FSMContext):
         except:
             await message.reply("❌Qandaydir noto'g'ri formatda jo'natdingiz, qayta to'g'irlab jo'nating🔄")
 
-@word_router.message(Command('new_words_excel'))
+
+@word_router.message(Command('new_words_excel'), F.chat.id == big_admin)
 async def new_words_excel_handler(message: Message, state: FSMContext):
     await state.set_state(NewWordExcel.selectCategory)
     await message.answer(
@@ -195,6 +196,15 @@ async def new_words_document_handler(call: CallbackQuery, state: FSMContext):
 
 @word_router.message(NewWordExcel.inputExcel)
 async def new_words_add_mb_handler(message: Message, state: FSMContext):
+
+    async def show_typing(chat_id):
+        try:
+            while True:
+                await message.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+                await asyncio.sleep(3)
+        except asyncio.CancelledError:
+            pass
+
     if message.document:
         file_path = f"{message.document.file_name}"
         await message.bot.download(message.document, file_path)
@@ -202,11 +212,13 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
         df = pd.read_excel(file_path, header=None)
         os.remove(file_path)
         count = 0
+        typing_task = asyncio.create_task(show_typing(message.chat.id))
         for index, row in df.iterrows():
             if row.shape[0] == 2:
                 row[2] = GoogleTranslator(source='ru', target='en').translate(row[1])
             if db.word_add(row[0], row[1], row[2], data['cat_id']):
                 count += 1
+        typing_task.cancel()
 
         await message.reply(f"🔢Jami {df.shape[0]} ta so'z\n✅Qo'shildi: {count} ta\n"
                             f"❌Xatolik: {df.shape[0] - count} ta")

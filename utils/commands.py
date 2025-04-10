@@ -25,6 +25,7 @@ admin_commands = [
 
 user_commands = [
     BotCommand(command='start', description="Botni ishga tushirish"),
+    BotCommand(command='words', description="So'zlarni ko'rish"),
     BotCommand(command='uz_ru_select', description="🇺🇿 ➡️ 🇷🇺"),
     BotCommand(command='ru_uz_select', description="🇷🇺 ➡️ 🇺🇿"),
     BotCommand(command='uz_en_select', description="🇺🇿 ➡️ 🇺🇸"),

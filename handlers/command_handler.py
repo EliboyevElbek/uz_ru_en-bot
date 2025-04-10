@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, BotCommandScopeChat
 
 from config import big_admin
 from utils.commands import admin_commands, user_commands
@@ -13,14 +13,20 @@ command_router = Router()
 
 @command_router.message(CommandStart(), F.chat.id == big_admin)
 async def start_admin_handler(message: Message):
-    await message.bot.set_my_commands(admin_commands)
+    await message.bot.set_my_commands(
+        admin_commands,
+        scope=BotCommandScopeChat(chat_id=message.chat.id)
+    )
     await message.answer(
         f"✅Admin botga xush kelibsiz! {message.from_user.mention_html(f"{message.from_user.full_name}")}"
     )
 
 @command_router.message(CommandStart())
 async def start_user_handler(message: Message):
-    await message.bot.set_my_commands(user_commands)
+    await message.bot.set_my_commands(
+        user_commands,
+        scope=BotCommandScopeChat(chat_id=message.chat.id)
+    )
     db.bot_members(tg_id=message.from_user.id, username=message.from_user.username, full_name=message.from_user.full_name)
     await message.answer(
         f"🤖Botga xush kelibsiz! {message.from_user.mention_html(f"{message.from_user.full_name}")}"
