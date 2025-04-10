@@ -43,6 +43,6 @@ def between_keyboard(id):
     for i in range(0, len(words), 10):
         words_between_kb.button(text=f"{i+1}-{i+10}")
 
-    words_between_kb.adjust(5)
+    words_between_kb.adjust(4)
     words_between_kb = words_between_kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
     return words_between_kb
