@@ -197,10 +197,13 @@ async def new_words_document_handler(call: CallbackQuery, state: FSMContext):
 @word_router.message(NewWordExcel.inputExcel)
 async def new_words_add_mb_handler(message: Message, state: FSMContext):
 
-    async def show_typing(chat_id):
+    async def show_typing():
         try:
             while True:
-                await message.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+                await message.bot.send_chat_action(
+                    chat_id=message.chat.id,
+                    action=ChatAction.TYPING
+                )
                 await asyncio.sleep(3)
         except asyncio.CancelledError:
             pass
@@ -212,12 +215,13 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
         df = pd.read_excel(file_path, header=None)
         os.remove(file_path)
         count = 0
-        typing_task = asyncio.create_task(show_typing(message.chat.id))
+        typing_task = asyncio.create_task(show_typing())
         for index, row in df.iterrows():
             if row.shape[0] == 2:
                 row[2] = GoogleTranslator(source='ru', target='en').translate(row[1])
             if db.word_add(row[0], row[1], row[2], data['cat_id']):
                 count += 1
+            await asyncio.sleep(0)
         typing_task.cancel()
 
         await message.reply(f"🔢Jami {df.shape[0]} ta so'z\n✅Qo'shildi: {count} ta\n"

@@ -19,7 +19,7 @@ added_router = Router()
 
 voqia = None
 
-@added_router.message(F.text == 'audio', F.chat.id == big_admin)
+@added_router.message(F.text.lower() == 'audio', F.chat.id == big_admin)
 async def sura_audio_handler(message: Message):
     response = requests.get(url=f"https://quranapi.pages.dev/api/audio/56.json")
     data = json.loads(response.text)["1"]
@@ -27,7 +27,7 @@ async def sura_audio_handler(message: Message):
     await message.answer_audio(audio=data["originalUrl"], caption=f"Muallif: {data['reciter']}")
 
 
-@added_router.message(F.text == 'voqia', F.chat.id == big_admin)
+@added_router.message(F.text.lower() == 'voqia', F.chat.id == big_admin)
 async def sura_handler(message: Message, state: FSMContext):
     global voqia
     with open('handlers/directory/surah.txt', 'r') as file:
