@@ -6,7 +6,7 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from handlers.category_handler import category_router
 from handlers.command_handler import command_router
-from handlers.listening_handler import listen_router
+# from handlers.listening_handler import listen_router
 from handlers.words_handler import word_router
 from handlers.added_handler import added_router
 
@@ -24,7 +24,7 @@ async def main():
         command_router,
         word_router,
         added_router,
-        listen_router
+        # listen_router
     )
     await dp.start_polling(bot)
 

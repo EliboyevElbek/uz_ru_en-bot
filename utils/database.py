@@ -1,10 +1,14 @@
 import psycopg
-from config import DB_USER, DB_HOST, DB_PASS
+from psycopg.errors import DuplicateDatabase
+
+from config import DB_USER, DB_HOST, DB_PASS, DB_NAME
 from datetime import datetime, timedelta
 
 
 class Database:
-    def __init__(self, db_name):
+    def __init__(self, db_name=DB_NAME):
+        self.db_name = db_name
+        self.create_database_if_not_exists()
         self.dsn = {
             "dbname": db_name,
             "user": DB_USER,
@@ -13,6 +17,57 @@ class Database:
             "port": "5432"
         }
         self.conn = psycopg.connect(**self.dsn)
+        self.create_tables_if_not_exist()
+
+
+    def create_database_if_not_exists(self):
+        conn = psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS,
+            host=DB_HOST,
+            port="5432"
+        )
+        conn.autocommit = True
+        cur = conn.cursor()
+        try:
+            cur.execute(f"CREATE DATABASE {DB_NAME}")
+        except DuplicateDatabase:
+            pass
+        finally:
+            cur.close()
+            conn.close()
+
+    def create_tables_if_not_exist(self):
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS categories (
+                    id SERIAL PRIMARY KEY,
+                    category_name VARCHAR(255) UNIQUE NOT NULL
+                )
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    tg_id BIGINT UNIQUE NOT NULL,
+                    username VARCHAR(255),
+                    full_name VARCHAR(255),
+                    add_date VARCHAR(100)
+                )
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS words (
+                    id SERIAL PRIMARY KEY,
+                    word_uz VARCHAR(255) NOT NULL,
+                    word_ru VARCHAR(255),
+                    word_en VARCHAR(255),
+                    category_id BIGINT REFERENCES categories(id) ON DELETE CASCADE
+                )
+            """)
+
+            self.conn.commit()
 
     def get_categories(self):
         with self.conn.cursor() as cursor:
