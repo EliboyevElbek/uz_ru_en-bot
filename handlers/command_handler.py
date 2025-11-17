@@ -13,12 +13,11 @@ command_router = Router()
 
 @command_router.message(CommandStart(), F.chat.id == big_admin)
 async def start_admin_handler(message: Message):
-    await message.bot.set_my_commands(
-        admin_commands,
+    await message.bot.set_my_commands(admin_commands,
         scope=BotCommandScopeChat(chat_id=message.chat.id)
     )
     await message.answer(
-        f"✅Admin botga xush kelibsiz! {message.from_user.mention_html(f"{message.from_user.full_name}")}"
+        f"✅Admin botga xush kelibsiz! {message.from_user.mention_html(message.from_user.full_name)}"
     )
 
 @command_router.message(CommandStart())
@@ -29,13 +28,13 @@ async def start_user_handler(message: Message):
     )
     db.bot_members(tg_id=message.from_user.id, username=message.from_user.username, full_name=message.from_user.full_name)
     await message.answer(
-        f"🤖Botga xush kelibsiz! {message.from_user.mention_html(f"{message.from_user.full_name}")}"
+        f"🤖Botga xush kelibsiz! {message.from_user.mention_html(message.from_user.full_name)}"
     )
 
 @command_router.message(Command('help'))
 async def help_handler(message: Message):
     await message.reply(
-        text=f"🚨Hurmatli {message.from_user.mention_html(f"{message.from_user.full_name}")}!\n"
+        text=f"🚨Hurmatli {message.from_user.mention_html(message.from_user.full_name)}!\n"
              f"bu botda siz <b>Rus tilida</b> so'z yodlashni yanada osonlashtirishingiz mumkin.\n\n"
              f"<b>Buyruqlar:</b>\n<b>uz-ru-select</b> - O'zbekcha so'z va ruschada 4 ta varianti beriladi siz"
              f" to'g'risini topishingiz kerak bo'ladi.\n\n<b>ru-uz-select</b> - bu tepadagi buyruqni aksi"

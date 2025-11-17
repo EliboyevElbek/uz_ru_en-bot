@@ -22,7 +22,7 @@ class Database:
 
     def create_database_if_not_exists(self):
         conn = psycopg.connect(
-            dbname=DB_NAME,
+            dbname="postgres",
             user=DB_USER,
             password=DB_PASS,
             host=DB_HOST,
@@ -61,13 +61,38 @@ class Database:
                 CREATE TABLE IF NOT EXISTS words (
                     id SERIAL PRIMARY KEY,
                     word_uz VARCHAR(255) NOT NULL,
-                    word_ru VARCHAR(255),
                     word_en VARCHAR(255),
+                    word_ru VARCHAR(255),
                     category_id BIGINT REFERENCES categories(id) ON DELETE CASCADE
                 )
             """)
 
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS location (
+                    id SERIAL PRIMARY KEY,
+                    page BIGINT NOT NULL DEFAULT 0,
+                )
+            """)
+
             self.conn.commit()
+
+
+    def save_loc(self, loc):
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute('''
+                    UPDATE "location" SET page=%s;
+                ''', (loc,))
+                self.conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+
+    def get_loc(self):
+        with self.conn.cursor() as cursor:
+            cursor.execute('''SELECT page FROM "location"''')
+            return cursor.fetchone()
 
     def get_categories(self):
         with self.conn.cursor() as cursor:
@@ -133,7 +158,7 @@ class Database:
         try:
             with self.conn.cursor() as cursor:
                 words = cursor.execute(
-                    'SELECT word_uz, word_ru, word_en FROM "words" WHERE category_id=%s;', (category_id,)
+                    'SELECT word_uz, word_en, word_ru FROM "words" WHERE category_id=%s;', (category_id,)
                 )
                 words = words.fetchall()
             return words
@@ -144,7 +169,7 @@ class Database:
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(
-                    'INSERT INTO "words" (word_uz, word_ru, word_en, category_id) VALUES (%s, %s, %s, %s);', (uz, ru, en, id)
+                    'INSERT INTO "words" (word_uz, word_en, word_ru, category_id) VALUES (%s, %s, %s, %s);', (uz, en, ru, id)
                 )
                 self.conn.commit()
             return True
@@ -223,7 +248,7 @@ class Database:
 
     def bot_members(self, tg_id, username, full_name, add_date=None):
         if add_date is None:
-            add_date = (datetime.now() + timedelta(hours=5)).strftime("%d.%m.%Y/%H:%M")
+            add_date = (datetime.now()).strftime("%d.%m.%Y/%H:%M")
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(

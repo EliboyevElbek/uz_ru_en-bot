@@ -49,12 +49,15 @@ def between_kb(words10, l=0):
         row.append([InlineKeyboardButton(text='➡️', callback_data='next'),
                     InlineKeyboardButton(text='🇷🇺🔁🇺🇸', callback_data='en')])
 
+    row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
+
     b_kb = InlineKeyboardMarkup(
         inline_keyboard=row
     )
     return b_kb
 
-def between_kb_en(words10, l=0):
+def between_kb_ru(words10, l=0):
     row = []
     if l + 1 == words10 and words10 > 1:
         row.append([InlineKeyboardButton(text='⬅️', callback_data='prev'),
@@ -66,6 +69,9 @@ def between_kb_en(words10, l=0):
     elif words10 > 1:
         row.append([InlineKeyboardButton(text='➡️', callback_data='next'),
                     InlineKeyboardButton(text='🇺🇸🔁🇷🇺', callback_data='uz')])
+
+    row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
 
     b_kb_en = InlineKeyboardMarkup(
         inline_keyboard=row

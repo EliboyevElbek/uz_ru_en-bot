@@ -12,7 +12,7 @@ from aiogram.types import Message, CallbackQuery, PollAnswer
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
-from keyboard.inline_keyboard import get_categories_kb, between_kb, between_kb_en
+from keyboard.inline_keyboard import get_categories_kb, between_kb, between_kb_ru
 from keyboard.keyboard import off, select_word_kb, between_keyboard, quiz_stop
 from state.admin_state import WordsState, NewWordState, NewWordExcel, UzWords, RuWords, Translate, EnWords, UzEnWords, \
     Quiz, QuizUzRu, QuizEnUz, QuizUzEn
@@ -102,7 +102,7 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
             text=info,
             reply_markup=between_kb(len(words10), l)
         )
-    elif call.data == 'en':
+    elif call.data == 'ru':
         await state.update_data(nishon=True)
         info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
         count = 1
@@ -111,7 +111,7 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
             count += 1
         await call.message.edit_text(
             text=info,
-            reply_markup=between_kb_en(len(words10), l)
+            reply_markup=between_kb_ru(len(words10), l)
         )
     elif call.data == 'uz':
         await state.update_data(nishon=False)
@@ -123,6 +123,20 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         await call.message.edit_text(
             text=info,
             reply_markup=between_kb(len(words10), l)
+        )
+    elif call.data == 'save':
+        db.save_loc(loc=l)
+        await call.answer("📌Eslab qolindi", show_alert=False)
+    elif call.data == 'goto':
+        l = db.get_loc()[0]
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
+        count = 1
+        for word in words10[l]:
+            info += f"<b>{count}. {word[2].lower()} ——— {word[0].lower()}</b>\n\n"
+            count += 1
+        await call.message.edit_text(
+            text=info,
+            reply_markup=between_kb_ru(len(words10), l)
         )
     await state.update_data(l=l)
 
@@ -143,7 +157,7 @@ async def new_add_handler(call: CallbackQuery, state: FSMContext):
     await call.message.answer(
         text="Yaxshi, endi so'zlarni quydagi formatda jo'nating\n\n"
              "(🇺🇿)  -  (🇷🇺)\n\n"
-             "<b>(🇺🇿)O'zbekcha so'z-(🇷🇺)Ruscha so'z</b>\n\n"
+             "<b>(🇺🇿)O'zbekcha so'z-(🇺🇸)Inglizcha so'z</b>\n\n"
              "shu ko'rinishda jo'nating\n"
              "<i>Kiritib bo'lgach <b>Tugatish</b> tugmasini bosing</i>",
         reply_markup=off
@@ -162,10 +176,10 @@ async def insert_word_handler(message: Message, state: FSMContext):
         cat_id = await state.get_data()
         try:
             words = message.text.split('-')
-            en_translate = GoogleTranslator(source='uz', target='en').translate(message.text)
-            if '-' in en_translate:
-                en_translate = en_translate.split('-')[0]
-            if db.word_add(uz=words[0], ru=words[1], en=en_translate, id=cat_id['cat_id']):
+            ru_translate = GoogleTranslator(source='uz', target='ru').translate(message.text)
+            if '-' in ru_translate:
+                ru_translate = ru_translate.split('-')[0].lower()
+            if db.word_add(uz=words[0], en=words[1], ru=ru_translate, id=cat_id['cat_id']):
                 await message.reply(
                     text="✅Muvaffaqiyatli qo'shildi"
                 )
@@ -191,7 +205,7 @@ async def new_words_document_handler(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     await state.update_data(cat_id=call.data)
     await call.message.answer(text="Excel documentni jo'nating\n"
-                              "Format: 1-ustun <b>Uzb</b> - 2-ustun <b>Rus</b> 3-ustun <b>English</b>")
+                              "Format: 1-ustun <b>Uzb</b> - 2-ustun <b>English</b>")
     await state.set_state(NewWordExcel.inputExcel)
 
 @word_router.message(NewWordExcel.inputExcel)
@@ -218,7 +232,7 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
         typing_task = asyncio.create_task(show_typing())
         for index, row in df.iterrows():
             if row.shape[0] == 2:
-                row[2] = GoogleTranslator(source='ru', target='en').translate(row[1])
+                row[2] = GoogleTranslator(source='en', target='ru').translate(row[1])
             if db.word_add(row[0], row[1], row[2], data['cat_id']):
                 count += 1
             await asyncio.sleep(0)
@@ -490,48 +504,48 @@ async def uz_select_handler(message: Message, state: FSMContext):
             reply_markup=ReplyKeyboardRemove()
         )
         await state.clear()
-
-@word_router.message(Command('uz_ru_translate'))
-async def uz_ru_translate_handler(message: Message, state: FSMContext):
-    await message.reply(
-        text="Tarjima qilish uchun so'z kiriting:\n🇺🇿 🔁 ➡️ 🇷🇺",
-    )
-    await state.set_state(Translate.inputBodyUz)
-
-@word_router.message(Command('ru_uz_translate'))
-async def ru_uz_translate_handler(message: Message, state: FSMContext):
-    await message.reply(
-        text="Tarjima qilish uchun so'z kiriting:\n🇷🇺 🔁 ➡️ 🇺🇿",
-    )
-    await state.set_state(Translate.inputBodyRu)
-
-@word_router.message(Translate.inputBodyUz)
-async def uz_ru_translate_input_handler(message: Message, state: FSMContext):
-    if message.text.startswith('/'):
-        await state.clear()
-    else:
-        ru_translate = GoogleTranslator(source='uz', target='ru').translate(message.text)
-        await message.bot.send_chat_action(
-            chat_id=message.chat.id,
-            action=ChatAction.TYPING,
-        )
-        await message.reply(
-            text=ru_translate
-        )
-
-@word_router.message(Translate.inputBodyRu)
-async def ru_uz_translate_input_handler(message: Message, state: FSMContext):
-    if message.text.startswith('/'):
-        await state.clear()
-    else:
-        uz_translate = GoogleTranslator(source='ru', target='uz').translate(message.text)
-        await message.bot.send_chat_action(
-            chat_id=message.chat.id,
-            action=ChatAction.TYPING,
-        )
-        await message.reply(
-            text=uz_translate
-        )
+#
+# @word_router.message(Command('uz_ru_translate'))
+# async def uz_ru_translate_handler(message: Message, state: FSMContext):
+#     await message.reply(
+#         text="Tarjima qilish uchun so'z kiriting:\n🇺🇿 🔁 ➡️ 🇷🇺",
+#     )
+#     await state.set_state(Translate.inputBodyUz)
+#
+# @word_router.message(Command('ru_uz_translate'))
+# async def ru_uz_translate_handler(message: Message, state: FSMContext):
+#     await message.reply(
+#         text="Tarjima qilish uchun so'z kiriting:\n🇷🇺 🔁 ➡️ 🇺🇿",
+#     )
+#     await state.set_state(Translate.inputBodyRu)
+#
+# @word_router.message(Translate.inputBodyUz)
+# async def uz_ru_translate_input_handler(message: Message, state: FSMContext):
+#     if message.text.startswith('/'):
+#         await state.clear()
+#     else:
+#         ru_translate = GoogleTranslator(source='uz', target='ru').translate(message.text)
+#         await message.bot.send_chat_action(
+#             chat_id=message.chat.id,
+#             action=ChatAction.TYPING,
+#         )
+#         await message.reply(
+#             text=ru_translate
+#         )
+#
+# @word_router.message(Translate.inputBodyRu)
+# async def ru_uz_translate_input_handler(message: Message, state: FSMContext):
+#     if message.text.startswith('/'):
+#         await state.clear()
+#     else:
+#         uz_translate = GoogleTranslator(source='ru', target='uz').translate(message.text)
+#         await message.bot.send_chat_action(
+#             chat_id=message.chat.id,
+#             action=ChatAction.TYPING,
+#         )
+#         await message.reply(
+#             text=uz_translate
+#         )
 
 @word_router.message(Command('en_uz_select'))
 async def en_uz_select_handler(message: Message, state: FSMContext):
