@@ -70,7 +70,7 @@ class Database:
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS location (
                     id SERIAL PRIMARY KEY,
-                    page BIGINT NOT NULL DEFAULT 0,
+                    page BIGINT NOT NULL DEFAULT 0
                 )
             """)
 
@@ -96,7 +96,7 @@ class Database:
 
     def get_categories(self):
         with self.conn.cursor() as cursor:
-            cursor.execute('SELECT * FROM "categories"')
+            cursor.execute('''SELECT * FROM "categories"''')
             return cursor.fetchall()
 
     def get_category_name(self, id):
