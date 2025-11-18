@@ -1,3 +1,5 @@
+import time
+
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -6,7 +8,7 @@ from aiogram.types import Message, BotCommandScopeChat
 from config import big_admin
 from utils.commands import admin_commands, user_commands
 from utils.database import Database
-from config import DB_NAME
+from config import DB_NAME, admin_commands_dict, user_commands_dict
 
 db = Database(DB_NAME)
 command_router = Router()
@@ -45,6 +47,24 @@ async def help_handler(message: Message):
              f"<b>ru-uz-typing</b> - bu tepadagini aksi Ruschada so'z beriladi O'zbekchasini yozasiz. (<i>Tez orada...🔜</i>)\n\n\n"
              f"<i>Tepadagilardan birortasini tanlang🙂</i>"
     )
+
+@command_router.message(Command('commands'), F.chat.id == big_admin)
+async def admin_commands_handler(message: Message):
+    info = ''
+    for key, value in admin_commands_dict.items():
+        info += f"<b>{key}</b> - {value}\n\n"
+    msg = await message.answer(info)
+    time.sleep(6)
+    await msg.delete()
+
+@command_router.message(Command('commands'))
+async def user_commands_handler(message: Message):
+    info = ''
+    for key, value in user_commands_dict.items():
+        info += f"<b>{key}</b> - {value}\n\n"
+    msg = await message.answer(info)
+    time.sleep(6)
+    await msg.delete()
 
 @command_router.message(Command('cancel'))
 async def cansel_handler(message: Message, state: FSMContext):

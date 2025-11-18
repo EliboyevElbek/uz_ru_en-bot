@@ -39,18 +39,20 @@ select_lang = InlineKeyboardMarkup(
 def between_kb(words10, l=0):
     row = []
     if l + 1 == words10 and words10 > 1:
-        row.append([InlineKeyboardButton(text='⬅️', callback_data='prev'),
-                    InlineKeyboardButton(text='🇷🇺🔁🇺🇸', callback_data='en')])
+        row.append([InlineKeyboardButton(text='⬅️', callback_data='prev')])
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
     elif words10 > 1 and l > 0:
         row.append([InlineKeyboardButton(text='⬅️', callback_data='prev'),
-                    InlineKeyboardButton(text='🇷🇺🔁🇺🇸', callback_data='en'),
                    InlineKeyboardButton(text='➡️', callback_data='next')])
-    elif words10 > 1:
-        row.append([InlineKeyboardButton(text='➡️', callback_data='next'),
-                    InlineKeyboardButton(text='🇷🇺🔁🇺🇸', callback_data='en')])
-
-    row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
                 InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
+    elif words10 > 1:
+        row.append([InlineKeyboardButton(text='➡️', callback_data='next')])
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                    InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
+
+    row.append([InlineKeyboardButton(text='🇺🇸🔁🇷🇺', callback_data='en')])
 
     b_kb = InlineKeyboardMarkup(
         inline_keyboard=row
@@ -60,18 +62,21 @@ def between_kb(words10, l=0):
 def between_kb_ru(words10, l=0):
     row = []
     if l + 1 == words10 and words10 > 1:
-        row.append([InlineKeyboardButton(text='⬅️', callback_data='prev'),
-                    InlineKeyboardButton(text='🇺🇸🔁🇷🇺', callback_data='uz')])
+        row.append([InlineKeyboardButton(text='⬅️', callback_data='prev')])
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
     elif words10 > 1 and l > 0:
         row.append([InlineKeyboardButton(text='⬅️', callback_data='prev'),
-                    InlineKeyboardButton(text='🇺🇸🔁🇷🇺', callback_data='uz'),
                    InlineKeyboardButton(text='➡️', callback_data='next')])
-    elif words10 > 1:
-        row.append([InlineKeyboardButton(text='➡️', callback_data='next'),
-                    InlineKeyboardButton(text='🇺🇸🔁🇷🇺', callback_data='uz')])
-
-    row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
                 InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
+    elif words10 > 1:
+        row.append([InlineKeyboardButton(text='➡️', callback_data='next')])
+        row.append([InlineKeyboardButton(text='📌Eslab qolish', callback_data='save'),
+                InlineKeyboardButton(text='📍Ochish', callback_data='goto')])
+
+    row.append([InlineKeyboardButton(text='🇷🇺🔁🇺🇸', callback_data='uz')])
+
 
     b_kb_en = InlineKeyboardMarkup(
         inline_keyboard=row

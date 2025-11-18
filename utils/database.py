@@ -74,6 +74,12 @@ class Database:
                 )
             """)
 
+            cur.execute("SELECT COUNT(*) FROM location")
+            count = cur.fetchone()[0]
+
+            if count == 0:
+                cur.execute("INSERT INTO location (page) VALUES (0)")
+
             self.conn.commit()
 
 
@@ -165,7 +171,7 @@ class Database:
         except:
             return False
 
-    def word_add(self, uz, ru, en, id):
+    def word_add(self, uz, en, ru, id):
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(
