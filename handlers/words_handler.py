@@ -52,7 +52,8 @@ async def view_words_handler(callback: CallbackQuery, state: FSMContext):
         info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar <b>(1-{len(words[:10])})</b>\n\n\n'
         count = 1
         for word in words[:10]:
-            info += f"<blockquote><b>{count}. {word[1].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+            info += (f"<blockquote><b>{count}. {word[1].lower()} ——— {word[0].lower()}</b></blockquote>"
+                     f"\n\n")
             count += 1
         await callback.message.answer(
             text=f"{info}",
@@ -125,19 +126,33 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
             reply_markup=between_kb(len(words10), l)
         )
     elif call.data == 'save':
-        db.save_loc(loc=l)
+        tg_id = call.from_user.id
+        try:
+            n = db.get_loc(tg_id=tg_id)[0]
+        except:
+            n = None
+        if n is not None:
+            db.update_loc(loc=l, tg_id=tg_id)
+        else:
+            db.save_loc(loc=l, tg_id=tg_id)
         await call.answer("📌Eslab qolindi", show_alert=False)
+
     elif call.data == 'goto':
-        l = db.get_loc()[0]
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
-        count = 1
-        for word in words10[l]:
-            info += f"<blockquote><b>{count}. {word[2].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
-            count += 1
-        await call.message.edit_text(
-            text=info,
-            reply_markup=between_kb_ru(len(words10), l)
-        )
+        tg_id = call.from_user.id
+        try:
+            l = db.get_loc(tg_id=tg_id)[0]
+            info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
+            count = 1
+            for word in words10[l]:
+                info += f"<blockquote><b>{count}. {word[2].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+                count += 1
+            await call.message.edit_text(
+                text=info,
+                reply_markup=between_kb_ru(len(words10), l)
+            )
+        except:
+            await call.answer("Siz sahifa saqlamagansiz", show_alert=False)
+
     await state.update_data(l=l)
 
 

@@ -70,34 +70,36 @@ class Database:
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS location (
                     id SERIAL PRIMARY KEY,
+                    tg_id VARCHAR(255) NOT NULL,
                     page BIGINT NOT NULL DEFAULT 0
                 )
             """)
 
-            cur.execute("SELECT COUNT(*) FROM location")
-            count = cur.fetchone()[0]
-
-            if count == 0:
-                cur.execute("INSERT INTO location (page) VALUES (0)")
-
-            self.conn.commit()
-
-
-    def save_loc(self, loc):
+    def save_loc(self, loc, tg_id):
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute('''
-                    UPDATE "location" SET page=%s;
-                ''', (loc,))
+                    INSERT INTO "location" (page, tg_id) VALUES (%s, %S);
+                ''', (loc, tg_id))
                 self.conn.commit()
             return True
         except Exception as e:
             print(f"Error: {e}")
             return False
 
-    def get_loc(self):
+    def update_loc(self, loc, tg_id):
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute('''UPDATE "location" SET page=%s WHERE tg_id=%s;''', (loc, tg_id))
+                self.conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+
+    def get_loc(self, tg_id):
         with self.conn.cursor() as cursor:
-            cursor.execute('''SELECT page FROM "location"''')
+            cursor.execute('''SELECT page FROM "location" WHERE tg_id=%s;''', (tg_id,))
             return cursor.fetchone()
 
     def get_categories(self):
