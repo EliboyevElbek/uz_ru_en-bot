@@ -9,8 +9,9 @@ def get_categories_kb():
     row = []
     categories = db.get_categories()
     for category in categories:
+        allw = db.get_uz_words(category[0])
         row.append(
-            [InlineKeyboardButton(text=category[1], callback_data=str(category[0]))]
+            [InlineKeyboardButton(text=f"{category[1]} ({len(allw)})", callback_data=str(category[0]))]
         )
 
     cat_kb = InlineKeyboardMarkup(

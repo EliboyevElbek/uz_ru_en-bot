@@ -85,9 +85,13 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         for word in words10[l]:
             info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
             count += 1
+        if ss == 2:
+            kb = between_kb_ru(len(words10), l)
+        else:
+            kb = between_kb(len(words10), l)
         await call.message.edit_text(
             text=info,
-            reply_markup=between_kb(len(words10), l)
+            reply_markup=kb
         )
     elif call.data == 'prev':
         ss = 1
@@ -99,9 +103,13 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         for word in words10[l]:
             info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
             count += 1
+        if ss == 2:
+            kb = between_kb_ru(len(words10), l)
+        else:
+            kb = between_kb(len(words10), l)
         await call.message.edit_text(
             text=info,
-            reply_markup=between_kb(len(words10), l)
+            reply_markup=kb
         )
     elif call.data == 'en':
         await state.update_data(nishon=True)
@@ -138,17 +146,24 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         await call.answer("📌Eslab qolindi", show_alert=False)
 
     elif call.data == 'goto':
+        ss = 1
         tg_id = call.from_user.id
+        if all_data['nishon']:
+            ss += 1
         try:
             l = db.get_loc(tg_id=tg_id)[0]
             info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
             count = 1
             for word in words10[l]:
-                info += f"<blockquote><b>{count}. {word[2].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+                info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
                 count += 1
+            if ss == 2:
+                kb = between_kb_ru(len(words10), l)
+            else:
+                kb = between_kb(len(words10), l)
             await call.message.edit_text(
                 text=info,
-                reply_markup=between_kb_ru(len(words10), l)
+                reply_markup=kb
             )
         except:
             await call.answer("Siz sahifa saqlamagansiz", show_alert=False)

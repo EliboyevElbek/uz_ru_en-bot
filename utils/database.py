@@ -2,7 +2,7 @@ import psycopg
 from psycopg.errors import DuplicateDatabase
 
 from config import DB_USER, DB_HOST, DB_PASS, DB_NAME
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class Database:
@@ -26,7 +26,8 @@ class Database:
             user=DB_USER,
             password=DB_PASS,
             host=DB_HOST,
-            port="5432"
+            port="5432",
+            connect_timeout=3
         )
         conn.autocommit = True
         cur = conn.cursor()
@@ -71,16 +72,15 @@ class Database:
                 CREATE TABLE IF NOT EXISTS location (
                     id SERIAL PRIMARY KEY,
                     tg_id VARCHAR(255) NOT NULL,
-                    page BIGINT NOT NULL DEFAULT 0
+                    page BIGINT NOT NULL
                 )
             """)
+        self.conn.commit()
 
     def save_loc(self, loc, tg_id):
         try:
             with self.conn.cursor() as cursor:
-                cursor.execute('''
-                    INSERT INTO "location" (page, tg_id) VALUES (%s, %S);
-                ''', (loc, tg_id))
+                cursor.execute('''INSERT INTO "location" (page, tg_id) VALUES (%s, %s);''', (loc, tg_id))
                 self.conn.commit()
             return True
         except Exception as e:
@@ -98,9 +98,17 @@ class Database:
             return False
 
     def get_loc(self, tg_id):
-        with self.conn.cursor() as cursor:
-            cursor.execute('''SELECT page FROM "location" WHERE tg_id=%s;''', (tg_id,))
-            return cursor.fetchone()
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute('''SELECT page FROM "location" WHERE tg_id=%s;''', (tg_id,))
+                page = cursor.fetchone()
+                if page:
+                    return page
+                else:
+                    return False
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
 
     def get_categories(self):
         with self.conn.cursor() as cursor:
