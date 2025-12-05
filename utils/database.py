@@ -77,30 +77,30 @@ class Database:
             """)
         self.conn.commit()
 
-    def save_loc(self, loc, tg_id):
+    def save_loc(self, loc, tg_id, cat_id):
         try:
             with self.conn.cursor() as cursor:
-                cursor.execute('''INSERT INTO "location" (page, tg_id) VALUES (%s, %s);''', (loc, tg_id))
+                cursor.execute('''INSERT INTO "location" (page, tg_id, cat_id) VALUES (%s, %s, %s);''', (loc, tg_id, cat_id))
                 self.conn.commit()
             return True
         except Exception as e:
             print(f"Error: {e}")
             return False
 
-    def update_loc(self, loc, tg_id):
+    def update_loc(self, loc, tg_id, cat_id):
         try:
             with self.conn.cursor() as cursor:
-                cursor.execute('''UPDATE "location" SET page=%s WHERE tg_id=%s;''', (loc, tg_id))
+                cursor.execute('''UPDATE "location" SET page=%s WHERE tg_id=%s AND cat_id=%s;''', (loc, tg_id, cat_id))
                 self.conn.commit()
             return True
         except Exception as e:
             print(f"Error: {e}")
             return False
 
-    def get_loc(self, tg_id):
+    def get_loc(self, tg_id, cat_id):
         try:
             with self.conn.cursor() as cursor:
-                cursor.execute('''SELECT page FROM "location" WHERE tg_id=%s;''', (tg_id,))
+                cursor.execute('''SELECT page FROM "location" WHERE tg_id=%s AND cat_id=%s;''', (tg_id, cat_id))
                 page = cursor.fetchone()
                 if page:
                     return page

@@ -43,6 +43,7 @@ async def view_words_handler(callback: CallbackQuery, state: FSMContext):
     words = db.get_words_category(category_id=callback.data)
     words10 = [words[i: i + 10] for i in range(0, len(words), 10)]
     cat_name = db.get_category_name(id=callback.data)
+    await state.update_data(cat_id=callback.data)
     await state.update_data(words10=words10)
     await state.update_data(cat_name=cat_name)
     await state.update_data(l=0)
@@ -74,6 +75,7 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
     all_data = await state.get_data()
     cat_name = all_data['cat_name']
     words10 = all_data['words10']
+    cat_id = all_data['cat_id']
     l = all_data['l']
     if call.data == 'next':
         ss = 1
@@ -136,13 +138,13 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
     elif call.data == 'save':
         tg_id = call.from_user.id
         try:
-            n = db.get_loc(tg_id=tg_id)[0]
+            n = db.get_loc(tg_id=tg_id, cat_id=cat_id)[0]
         except:
             n = None
         if n is not None:
-            db.update_loc(loc=l, tg_id=tg_id)
+            db.update_loc(loc=l, tg_id=tg_id, cat_id=cat_id)
         else:
-            db.save_loc(loc=l, tg_id=tg_id)
+            db.save_loc(loc=l, tg_id=tg_id, cat_id=cat_id)
         await call.answer("📌Eslab qolindi", show_alert=False)
 
     elif call.data == 'goto':
@@ -151,7 +153,7 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         if all_data['nishon']:
             ss += 1
         try:
-            l = db.get_loc(tg_id=tg_id)[0]
+            l = db.get_loc(tg_id=tg_id, cat_id=cat_id)[0]
             info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
             count = 1
             for word in words10[l]:
@@ -206,10 +208,10 @@ async def insert_word_handler(message: Message, state: FSMContext):
         cat_id = await state.get_data()
         try:
             words = message.text.split('-')
-            ru_translate = GoogleTranslator(source='uz', target='ru').translate(message.text)
+            ru_translate = GoogleTranslator(source='en', target='ru').translate(words[1].strip()).lower()
             if '-' in ru_translate:
                 ru_translate = ru_translate.split('-')[0].lower()
-            if db.word_add(uz=words[0], en=words[1], ru=ru_translate, id=cat_id['cat_id']):
+            if db.word_add(uz=words[0].lower(), en=words[1].strip().lower(), ru=ru_translate, id=cat_id['cat_id']):
                 await message.reply(
                     text="✅Muvaffaqiyatli qo'shildi"
                 )
@@ -248,7 +250,7 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
                     chat_id=message.chat.id,
                     action=ChatAction.TYPING
                 )
-                await asyncio.sleep(3)
+                await asyncio.sleep(2)
         except asyncio.CancelledError:
             pass
 
@@ -262,8 +264,8 @@ async def new_words_add_mb_handler(message: Message, state: FSMContext):
         typing_task = asyncio.create_task(show_typing())
         for index, row in df.iterrows():
             if row.shape[0] == 2:
-                row[2] = GoogleTranslator(source='en', target='ru').translate(row[1])
-            if db.word_add(row[0], row[1], row[2], data['cat_id']):
+                row[2] = GoogleTranslator(source='en', target='ru').translate(row[1].strip())
+            if db.word_add(row[0].lower(), row[1].strip().lower(), row[2].lower(), data['cat_id']):
                 count += 1
             await asyncio.sleep(0)
         typing_task.cancel()
