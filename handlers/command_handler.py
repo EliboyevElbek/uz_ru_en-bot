@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from aiogram import Router, F
@@ -48,14 +49,20 @@ async def help_handler(message: Message):
              f"<i>Tepadagilardan birortasini tanlang🙂</i>"
     )
 
+async def delete_task(message: Message, delay: int = 30):
+    await asyncio.sleep(delay)
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
 @command_router.message(Command('commands'), F.chat.id == big_admin)
 async def admin_commands_handler(message: Message):
     info = ''
     for key, value in admin_commands_dict.items():
         info += f"<b>{key}</b> - {value}\n\n"
     msg = await message.answer(info)
-    time.sleep(6)
-    await msg.delete()
+    asyncio.create_task(delete_task(msg))
 
 @command_router.message(Command('commands'))
 async def user_commands_handler(message: Message):
@@ -63,8 +70,7 @@ async def user_commands_handler(message: Message):
     for key, value in user_commands_dict.items():
         info += f"<b>{key}</b> - {value}\n\n"
     msg = await message.answer(info)
-    time.sleep(6)
-    await msg.delete()
+    asyncio.create_task(delete_task(msg))
 
 @command_router.message(Command('cancel'))
 async def cansel_handler(message: Message, state: FSMContext):
