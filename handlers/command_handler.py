@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command

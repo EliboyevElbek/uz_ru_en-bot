@@ -5,6 +5,10 @@ from config import DB_NAME
 
 from random import shuffle
 
+import redis
+import pickle
+import sys
+
 db = Database(DB_NAME)
 
 off = ReplyKeyboardMarkup(
@@ -37,12 +41,32 @@ def select_word_kb(words):
     return select_kb
 
 
+# def between_keyboard(id):
+#     words = db.get_words_category(category_id=id)
+#     words_between_kb = ReplyKeyboardBuilder()
+#     for i in range(0, len(words), 10):
+#         words_between_kb.button(text=f"{i+1}-{i+10}")
+#
+#     words_between_kb.adjust(4)
+#     words_between_kb = words_between_kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
+#     return words_between_kb
+
+
+
+r = redis.Redis(host='localhost', port=6379)
+
 def between_keyboard(id):
+    cached = r.get(f"kb:{id}")
+    if cached:
+        return pickle.loads(cached)
+
     words = db.get_words_category(category_id=id)
     words_between_kb = ReplyKeyboardBuilder()
     for i in range(0, len(words), 10):
-        words_between_kb.button(text=f"{i+1}-{i+10}")
+        words_between_kb.button(text=f"{i + 1}-{i + 10}")
 
     words_between_kb.adjust(4)
-    words_between_kb = words_between_kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
-    return words_between_kb
+    result = words_between_kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+    r.set(f"kb:{id}", pickle.dumps(result), ex=3600)
+    return result

@@ -14,7 +14,7 @@ from aiogram.types import ReplyKeyboardRemove
 
 from keyboard.inline_keyboard import get_categories_kb, between_kb, between_kb_ru
 from keyboard.keyboard import off, select_word_kb, between_keyboard, quiz_stop
-from state.admin_state import WordsState, NewWordState, NewWordExcel, UzWords, RuWords, Translate, EnWords, UzEnWords, \
+from state.admin_state import WordsState, NewWordState, NewWordExcel, UzWords, RuWords, EnWords, UzEnWords, \
     Quiz, QuizUzRu, QuizEnUz, QuizUzEn
 from config import DB_NAME, big_admin
 from utils.database import Database
@@ -308,6 +308,9 @@ async def uz_between_word_handler(message: Message, state: FSMContext):
     between = message.text.split('-')
     name = db.get_category_name(id=all['id'])
     uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    ru_words = db.get_ru_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    ru_copy = ru_words.copy()
+    uz_ru_dict = dict(zip(uz_words, ru_words))
     if uz_words:
         await message.answer(
             text=f"Yaxshi, {message.text} oraliqda <b>{name}</b> toifasidan men <b>O'zbekcha</b> beraman siz <b>Ruschasini</b> topasiz\n🇺🇿 🔁 ➡️ 🇷🇺",
@@ -323,9 +326,8 @@ async def uz_between_word_handler(message: Message, state: FSMContext):
             await asyncio.sleep(1)
         await msg.delete()
         size = len(uz_words)
-        ru_words = db.get_ru_all()
         uz = choice(uz_words)
-        ru_word = db.get_ru_from_uz(uz=uz[0])
+        ru_word = uz_ru_dict.get(uz)
         ru_words.remove(ru_word)
         uz_words.remove(uz)
         await message.answer(
@@ -333,8 +335,9 @@ async def uz_between_word_handler(message: Message, state: FSMContext):
             reply_markup=select_word_kb(sample(ru_words, k=3) + [ru_word])
         )
         await state.update_data(uz_words=uz_words)
-        await state.update_data(ru_words=db.get_ru_all())
+        await state.update_data(ru_words=ru_copy)
         await state.update_data(ru_word=ru_word)
+        await state.update_data(uz_ru_dict=uz_ru_dict)
         await state.update_data(size=size)
         await state.update_data(count=0)
         await state.update_data(fail=0)
@@ -342,7 +345,7 @@ async def uz_between_word_handler(message: Message, state: FSMContext):
     else:
         txt = all['txt']
         await message.edit_text(
-            text=f"Qaysi toifa so'zlarini yod olmoqchsiz, tanlang👇{txt}",
+            text=f"Qaysi toifa so'zlarini yod olmoqchisiz, tanlang👇{txt}",
             reply_markup=get_categories_kb()
         )
         await state.update_data(txt=txt + '.')
@@ -350,10 +353,12 @@ async def uz_between_word_handler(message: Message, state: FSMContext):
 @word_router.message(UzWords.nextLevel)
 async def uz_select_handler(message: Message, state: FSMContext):
     words = await state.get_data()
+    uz_ru_dict = words['uz_ru_dict']
     size = words['size']
     count = words['count']
     fail = words['fail']
     ru_words = words['ru_words']
+    ru_copy = ru_words.copy()
     ruw = words['ru_word']
     uz_words = words['uz_words']
     if message.text == "Tugatish✖":
@@ -367,7 +372,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         await state.clear()
         return
-    elif message.text == ruw[0]:
+    elif message.text.strip().lower() == ruw[0].strip().lower():
         count += 1
         await state.update_data(count=count)
     else:
@@ -377,7 +382,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         await state.update_data(fail=fail)
     if uz_words:
         uz = choice(uz_words)
-        ru_word = db.get_ru_from_uz(uz=uz[0])
+        ru_word = uz_ru_dict.get(uz)
         ru_words.remove(ru_word)
         await message.answer(
             text=f"<b>{uz[0]}</b>",
@@ -385,14 +390,14 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         uz_words.remove(uz)
         await state.update_data(uz_words=uz_words)
-        await state.update_data(ru_words=db.get_ru_all())
+        await state.update_data(ru_words=ru_copy)
         await state.update_data(ru_word=ru_word)
     else:
         await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
         await message.answer(
             text=f"<b>📊 Natijangiz:</b>\n\n"
                  f"<b>🔢 Jami so'zlar {size} ta</b>\n"
-                 f"<b>✅ To'g'ri Javoblar: {count} ta</b>\n"
+                 f"<b>✅ To'g'ri javoblar: {count} ta</b>\n"
                  f"<b>❌ Noto'g'ri javoblar: {fail} ta</b>\n"
                  f"<b>✖️ Javob berilmaganlari: {size - count - fail} ta</b>",
             reply_markup=ReplyKeyboardRemove()
@@ -432,6 +437,9 @@ async def ru_word_handler(message: Message, state: FSMContext):
     between = message.text.split('-')
     name = db.get_category_name(id=all['id'])
     ru_words = db.get_ru_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    uz_copy = uz_words.copy()
+    ru_uz_dict = dict(zip(ru_words, uz_words))
     if ru_words:
         await message.answer(
             text=f"Yaxshi, {message.text} oraliqda <b>{name}</b> toifasidan men <b>Ruschasini</b> beraman siz <b>O'zbekchasini</b> topasiz\n🇷🇺 🔁 ➡️ 🇺🇿",
@@ -447,28 +455,18 @@ async def ru_word_handler(message: Message, state: FSMContext):
             await asyncio.sleep(1)
         await msg.delete()
         size = len(ru_words)
-        uz_words = db.get_uz_all()
-
         ru = choice(ru_words)
-        uz_word = db.get_uz_from_ru(ru=ru[0])
+        uz_word = ru_uz_dict.get(ru)
         uz_words.remove(uz_word)
         ru_words.remove(ru)
-
-        await state.update_data(
-            ru_words=ru_words,
-            uz_words=uz_words,
-            uz_word=uz_word,
-            size=size,
-            count=0,
-            fail=0
-        )
 
         await message.answer(
             text=f"<b>{ru[0]}</b>",
             reply_markup=select_word_kb(sample(uz_words, k=3) + [uz_word])
         )
         await state.update_data(ru_words=ru_words)
-        await state.update_data(uz_words=db.get_uz_all())
+        await state.update_data(ru_uz_dict=ru_uz_dict)
+        await state.update_data(uz_words=uz_copy)
         await state.update_data(uz_word=uz_word)
         await state.update_data(size=size)
         await state.update_data(count=0)
@@ -486,10 +484,12 @@ async def ru_word_handler(message: Message, state: FSMContext):
 @word_router.message(RuWords.nextLevel)
 async def uz_select_handler(message: Message, state: FSMContext):
     words = await state.get_data()
+    ru_uz_dict = words['ru_uz_dict']
     size = words['size']
     count = words['count']
     fail = words['fail']
     uz_words = words['uz_words']
+    uz_copy = uz_words.copy()
     uzw = words['uz_word']
     ru_words = words['ru_words']
     if message.text == "Tugatish✖":
@@ -503,7 +503,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         await state.clear()
         return
-    elif message.text == uzw[0]:
+    elif message.text.strip().lower() == uzw[0].strip().lower():
         count += 1
         await state.update_data(count=count)
     else:
@@ -513,7 +513,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         await state.update_data(fail=fail)
     if ru_words:
         ru = choice(ru_words)
-        uz_word = db.get_uz_from_ru(ru=ru[0])
+        uz_word = ru_uz_dict.get(ru)
         uz_words.remove(uz_word)
 
 
@@ -523,7 +523,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         ru_words.remove(ru)
         await state.update_data(ru_words=ru_words)
-        await state.update_data(uz_words=db.get_uz_all())
+        await state.update_data(uz_words=uz_copy)
         await state.update_data(uz_word=uz_word)
     else:
         await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -610,6 +610,9 @@ async def en_between_word_handler(message: Message, state: FSMContext):
     between = message.text.split('-')
     name = db.get_category_name(id=all['id'])
     en_words = db.get_en_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    uz_copy = uz_words.copy()
+    en_uz_dict = dict(zip(en_words, uz_words))
     if en_words:
         await message.answer(
             text=f"Yaxshi, {message.text} oraliqda <b>{name}</b> toifasidan men <b>English'ni</b> beraman siz <b>O'zbekchasini</b> topasiz\n🇺🇸 🔁 ➡️ 🇺🇿",
@@ -625,9 +628,8 @@ async def en_between_word_handler(message: Message, state: FSMContext):
             await asyncio.sleep(1)
         await msg.delete()
         size = len(en_words)
-        uz_words = db.get_uz_all()
         en = choice(en_words)
-        uz_word = db.get_uz_from_en(en=en[0])
+        uz_word = en_uz_dict.get(en)
         en_words.remove(en)
         uz_words.remove(uz_word)
         await message.answer(
@@ -635,7 +637,8 @@ async def en_between_word_handler(message: Message, state: FSMContext):
             reply_markup=select_word_kb(sample(uz_words, k=3) + [uz_word])
         )
         await state.update_data(en_words=en_words)
-        await state.update_data(uz_words=db.get_uz_all())
+        await state.update_data(en_uz_dict=en_uz_dict)
+        await state.update_data(uz_words=uz_copy)
         await state.update_data(uz_word=uz_word)
         await state.update_data(size=size)
         await state.update_data(count=0)
@@ -652,12 +655,14 @@ async def en_between_word_handler(message: Message, state: FSMContext):
 @word_router.message(EnWords.nextLevel)
 async def uz_select_handler(message: Message, state: FSMContext):
     words = await state.get_data()
+    en_uz_dict = words['en_uz_dict']
     size = words['size']
     count = words['count']
     fail = words['fail']
     en_words = words['en_words']
     uzw = words['uz_word']
     uz_words = words['uz_words']
+    uz_copy = uz_words.copy()
     if message.text == "Tugatish✖":
         await message.answer(
             text=f"<b>📊 Natijangiz:</b>\n\n"
@@ -669,7 +674,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         await state.clear()
         return
-    elif message.text == uzw[0]:
+    elif message.text.strip().lower() == uzw[0].strip().lower():
         count += 1
         await state.update_data(count=count)
     else:
@@ -679,7 +684,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         await state.update_data(fail=fail)
     if en_words:
         en = choice(en_words)
-        uz_word = db.get_uz_from_en(en=en[0])
+        uz_word = en_uz_dict.get(en)
         uz_words.remove(uz_word)
         await message.answer(
             text=f"<b>{en[0]}</b>",
@@ -687,7 +692,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         en_words.remove(en)
         await state.update_data(en_words=en_words)
-        await state.update_data(uz_words=db.get_uz_all())
+        await state.update_data(uz_words=uz_copy)
         await state.update_data(uz_word=uz_word)
     else:
         await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -732,6 +737,9 @@ async def en_between_word_handler(message: Message, state: FSMContext):
     between = message.text.split('-')
     name = db.get_category_name(id=all['id'])
     uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    en_words = db.get_en_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+    en_copy = en_words.copy()
+    uz_en_dict = dict(zip(uz_words, en_copy))
     if uz_words:
         await message.answer(
             text=f"Yaxshi, {message.text} oraliqda <b>{name}</b> toifasidan men <b>O'zbekchasini</b> beraman siz <b>English'ni</b> topasiz\n🇺🇿 🔁 ➡️ 🇺🇸",
@@ -747,9 +755,8 @@ async def en_between_word_handler(message: Message, state: FSMContext):
             await asyncio.sleep(1)
         await msg.delete()
         size = len(uz_words)
-        en_words = db.get_en_all()
         uz = choice(uz_words)
-        en_word = db.get_en_from_uz(uz=uz[0])
+        en_word = uz_en_dict.get(uz)
         en_words.remove(en_word)
         uz_words.remove(uz)
         await message.answer(
@@ -757,7 +764,8 @@ async def en_between_word_handler(message: Message, state: FSMContext):
             reply_markup=select_word_kb(sample(en_words, k=3) + [en_word])
         )
         await state.update_data(uz_words=uz_words)
-        await state.update_data(en_words=db.get_en_all())
+        await state.update_data(uz_en_words=uz_en_dict)
+        await state.update_data(en_words=en_copy)
         await state.update_data(en_word=en_word)
         await state.update_data(size=size)
         await state.update_data(count=0)
@@ -774,10 +782,12 @@ async def en_between_word_handler(message: Message, state: FSMContext):
 @word_router.message(UzEnWords.nextLevel)
 async def uz_select_handler(message: Message, state: FSMContext):
     words = await state.get_data()
+    uz_en_dict = words['uz_en_dict']
     size = words['size']
     count = words['count']
     fail = words['fail']
     en_words = words['en_words']
+    en_copy = en_words.copy()
     enw = words['en_word']
     uz_words = words['uz_words']
     if message.text == "Tugatish✖":
@@ -801,7 +811,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         await state.update_data(fail=fail)
     if uz_words:
         uz = choice(uz_words)
-        en_word = db.get_en_from_uz(uz=uz[0])
+        en_word = uz_en_dict.get(uz)
         en_words.remove(en_word)
         await message.answer(
             text=f"<b>{uz[0]}</b>",
@@ -809,7 +819,7 @@ async def uz_select_handler(message: Message, state: FSMContext):
         )
         uz_words.remove(uz)
         await state.update_data(uz_words=uz_words)
-        await state.update_data(en_words=db.get_en_all())
+        await state.update_data(en_words=en_copy)
         await state.update_data(en_word=en_word)
     else:
         await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -860,6 +870,8 @@ async def ruuz_quiz_handler(message: Message, state: FSMContext):
         between = message.text.split('-')
         name = db.get_category_name(id=all['id'])
         ru_words = db.get_ru_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        ru_uz_dict = dict(zip(ru_words, uz_words))
         num = len(ru_words)
     except ValueError:
         if message.text == 'Tugatish✖':
@@ -893,8 +905,7 @@ async def ruuz_quiz_handler(message: Message, state: FSMContext):
             shuffle(ru_words)
             for ru in ru_words:
                 if not flag:
-                    uz_words = db.get_uz_all()
-                    uz_word = db.get_uz_from_ru(ru=ru[0])
+                    uz_word = ru_uz_dict.get(ru)
                     uz_words.remove(uz_word)
 
                     words_ls = [i[0] for i in [uz_word] + sample(uz_words, k=3)]
@@ -922,6 +933,8 @@ async def ruuz_quiz_handler(message: Message, state: FSMContext):
                         await asyncio.sleep(0.5)
                 else:
                     break
+
+                uz_words.append(uz_word)
 
             if not flag:
                 await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -983,6 +996,8 @@ async def uzru_quiz_handler(message: Message, state: FSMContext):
         between = message.text.split('-')
         name = db.get_category_name(id=all['id'])
         uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        ru_words = db.get_ru_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        uz_ru_dict = dict(zip(uz_words, ru_words))
         num = len(uz_words)
     except ValueError:
         if message.text == 'Tugatish✖':
@@ -1016,8 +1031,7 @@ async def uzru_quiz_handler(message: Message, state: FSMContext):
             shuffle(uz_words)
             for uz in uz_words:
                 if not flag:
-                    ru_words = db.get_ru_all()
-                    ru_word = db.get_ru_from_uz(uz=uz[0])
+                    ru_word = uz_ru_dict.get(uz)
                     ru_words.remove(ru_word)
 
                     words_ls = [i[0] for i in [ru_word] + sample(ru_words, k=3)]
@@ -1045,6 +1059,8 @@ async def uzru_quiz_handler(message: Message, state: FSMContext):
                         await asyncio.sleep(0.5)
                 else:
                     break
+
+                ru_words.append(ru_word)
 
             if not flag:
                 await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -1105,6 +1121,8 @@ async def enuz_word_handler(message: Message, state: FSMContext):
         between = message.text.split('-')
         name = db.get_category_name(id=all['id'])
         en_words = db.get_en_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        en_uz_dict = dict(zip(en_words, uz_words))
         num = len(en_words)
     except ValueError:
         if message.text == 'Tugatish✖':
@@ -1138,8 +1156,7 @@ async def enuz_word_handler(message: Message, state: FSMContext):
             shuffle(en_words)
             for en in en_words:
                 if not flag:
-                    uz_words = db.get_uz_all()
-                    uz_word = db.get_uz_from_en(en=en[0])
+                    uz_word = en_uz_dict.get(en)
                     uz_words.remove(uz_word)
 
                     words_ls = [i[0] for i in [uz_word] + sample(uz_words, k=3)]
@@ -1167,6 +1184,7 @@ async def enuz_word_handler(message: Message, state: FSMContext):
                         await asyncio.sleep(0.5)
                 else:
                     break
+                uz_words.append(uz_word)
 
             if not flag:
                 await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
@@ -1229,6 +1247,8 @@ async def uzen_word_handler(message: Message, state: FSMContext):
         between = message.text.split('-')
         name = db.get_category_name(id=all['id'])
         uz_words = db.get_uz_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        en_words = db.get_en_words(id=all['id'])[int(between[0]) - 1:int(between[1])]
+        uz_en_dict = dict(zip(uz_words, en_words))
         num = len(uz_words)
     except ValueError:
         if message.text == 'Tugatish✖':
@@ -1262,8 +1282,7 @@ async def uzen_word_handler(message: Message, state: FSMContext):
             shuffle(uz_words)
             for uz in uz_words:
                 if not flag:
-                    en_words = db.get_en_all()
-                    en_word = db.get_en_from_uz(uz=uz[0])
+                    en_word = uz_en_dict.get(uz)
                     en_words.remove(en_word)
 
                     words_ls = [i[0] for i in [en_word] + sample(en_words, k=3)]
@@ -1291,6 +1310,7 @@ async def uzen_word_handler(message: Message, state: FSMContext):
                         await asyncio.sleep(0.5)
                 else:
                     break
+                en_words.append(en_word)
 
             if not flag:
                 await message.answer("Ushbu toifadagi so'zlarni tugatdingiz🎉")
