@@ -29,7 +29,8 @@ async def sura_audio_handler(message: Message):
 @added_router.message(F.text.lower() == 'loiq', F.chat.id == big_admin)
 async def sura_loiq_handler(message: Message):
     audio = FSInputFile("handlers/directory/Voqea_surasi_Muhammadloiq.mp3")
-    await message.answer_audio(audio=audio)
+    await message.answer_audio(audio=audio, caption="Muallif: Muhammadloiq Qori")
+    await message.delete()
 
 @added_router.message(F.text.lower() == 'voqia', F.chat.id == big_admin)
 async def sura_handler(message: Message, state: FSMContext):
