@@ -50,11 +50,11 @@ async def view_words_handler(callback: CallbackQuery, state: FSMContext):
     await state.update_data(nishon=False)
     if words:
         await callback.message.delete()
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar <b>(1-{len(words[:10])})</b>\n\n\n'
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar <b>(1-{len(words[:10])})</b>\n\n'
         count = 1
         for word in words[:10]:
             info += (f"<blockquote><b>{count}. {word[1].lower()} ——— {word[0].lower()}</b></blockquote>"
-                     f"\n\n")
+                     f"\n")
             count += 1
         await callback.message.answer(
             text=f"{info}",
@@ -82,10 +82,10 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         if all_data['nishon']:
             ss += 1
         l += 1
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar <b>({l*10 + 1}-{l*10 + len(words10[l])})</b>\n\n\n'
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar <b>({l*10 + 1}-{l*10 + len(words10[l])})</b>\n\n'
         count = 1
         for word in words10[l]:
-            info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+            info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n"
             count += 1
         if ss == 2:
             kb = between_kb_ru(len(words10), l)
@@ -100,10 +100,10 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         if all_data['nishon']:
             ss += 1
         l -= 1
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l*10 + 1}-{l*10 + len(words10[l])})</b>\n\n\n'
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l*10 + 1}-{l*10 + len(words10[l])})</b>\n\n'
         count = 1
         for word in words10[l]:
-            info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+            info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n"
             count += 1
         if ss == 2:
             kb = between_kb_ru(len(words10), l)
@@ -115,10 +115,10 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         )
     elif call.data == 'en':
         await state.update_data(nishon=True)
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n'
         count = 1
         for word in words10[l]:
-            info += f"<blockquote><b>{count}. {word[2].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+            info += f"<blockquote><b>{count}. {word[2].lower()} ——— {word[0].lower()}</b></blockquote>\n"
             count += 1
         await call.message.edit_text(
             text=info,
@@ -126,10 +126,10 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
         )
     elif call.data == 'uz':
         await state.update_data(nishon=False)
-        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
+        info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n'
         count = 1
         for word in words10[l]:
-            info += f"<blockquote><b>{count}. {word[1].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+            info += f"<blockquote><b>{count}. {word[1].lower()} ——— {word[0].lower()}</b></blockquote>\n"
             count += 1
         await call.message.edit_text(
             text=info,
@@ -154,10 +154,10 @@ async def kb_handler(call: CallbackQuery, state: FSMContext):
             ss += 1
         try:
             l = db.get_loc(tg_id=tg_id, cat_id=cat_id)[0]
-            info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n\n'
+            info = f'<b>{cat_name.upper()}</b> toifasiga tegishli so\'zlar<b>({l * 10 + 1}-{l * 10 + len(words10[l])})</b>\n\n'
             count = 1
             for word in words10[l]:
-                info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n\n"
+                info += f"<blockquote><b>{count}. {word[ss].lower()} ——— {word[0].lower()}</b></blockquote>\n"
                 count += 1
             if ss == 2:
                 kb = between_kb_ru(len(words10), l)

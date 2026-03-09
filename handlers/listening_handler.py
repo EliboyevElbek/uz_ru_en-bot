@@ -43,13 +43,13 @@ async def searching(message: Message):
         for w in result_en:
             if w[1] >= 99:
                 info += "* "
-            info += f"<blockquote><b><code>{w[0]}</code> ——— {db.get_uz_from_en(w[0])[0]} ——— {db.get_ru_from_uz(db.get_uz_from_en(w[0])[0])[0]}</b></blockquote>\n"
+            info += f"<blockquote><b><code>{w[0]}</code> — {db.get_uz_from_en(w[0])[0]} — {db.get_ru_from_uz(db.get_uz_from_en(w[0])[0])[0]}</b></blockquote>\n"
     if result_uz:
         info += '\n'
         for w in result_uz:
             if w[1] >= 99:
                 info += "* "
-            info += f"<blockquote><b><code>{w[0]}</code> ——— {db.get_en_from_uz(w[0])[0]} ——— {db.get_ru_from_uz(w[0])[0]}</b></blockquote>\n"
+            info += f"<blockquote><b><code>{w[0]}</code> — {db.get_en_from_uz(w[0])[0]} —— {db.get_ru_from_uz(w[0])[0]}</b></blockquote>\n"
     else:
         info = "Natija topilmadi("
 
