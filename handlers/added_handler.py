@@ -3,7 +3,7 @@ import requests
 import json
 
 from  aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 
 from config import big_admin
 from aiogram.fsm.context import FSMContext
@@ -26,6 +26,10 @@ async def sura_audio_handler(message: Message):
     await message.delete()
     await message.answer_audio(audio=data["originalUrl"], caption=f"Muallif: {data['reciter']}")
 
+@added_router.message(F.text.lower() == 'loiq', F.chat.id == big_admin)
+async def sura_loiq_handler(message: Message):
+    audio = FSInputFile("handlers/directory/Voqea_surasi_Muhammadloiq.mp3")
+    await message.answer_audio(audio=audio)
 
 @added_router.message(F.text.lower() == 'voqia', F.chat.id == big_admin)
 async def sura_handler(message: Message, state: FSMContext):
